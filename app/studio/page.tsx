@@ -24,6 +24,24 @@ type StoryData = {
 };
 
 const THEMES = ['Safari', 'Ocean', 'Space', 'Jungle', 'Castle', 'Rainbow'] as const;
+const COLORS = [
+  '#2563eb',
+  '#ef4444',
+  '#f97316',
+  '#facc15',
+  '#22c55e',
+  '#14b8a6',
+  '#06b6d4',
+  '#8b5cf6',
+  '#ec4899',
+  '#a855f7',
+  '#84cc16',
+  '#0f172a',
+  '#6b7280',
+  '#92400e',
+  '#fde68a',
+  '#ffffff',
+] as const;
 const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 620;
 
@@ -35,6 +53,7 @@ export default function StudioPage() {
 
   const [name, setName] = useState('Momo');
   const [theme, setTheme] = useState<(typeof THEMES)[number]>('Safari');
+  const [selectedColor, setSelectedColor] = useState<(typeof COLORS)[number]>('#2563eb');
   const [peluche, setPeluche] = useState<PelucheData | null>(null);
   const [story, setStory] = useState<StoryData | null>(null);
   const [error, setError] = useState<string>('');
@@ -54,10 +73,10 @@ export default function StudioPage() {
     ctx.fillRect(0, 0, canvas.width, canvas.height);
     ctx.lineCap = 'round';
     ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#2563eb';
+    ctx.strokeStyle = selectedColor;
     ctx.lineWidth = 10;
     hasDrawingRef.current = false;
-  }, []);
+  }, [selectedColor]);
 
   useEffect(() => {
     prepareCanvas();
@@ -84,13 +103,15 @@ export default function StudioPage() {
       drawingRef.current = true;
       const point = getPoint(event);
       lastPointRef.current = point;
+      ctx.strokeStyle = selectedColor;
+      ctx.lineWidth = 10;
       ctx.beginPath();
       ctx.moveTo(point.x, point.y);
       ctx.lineTo(point.x + 0.1, point.y + 0.1);
       ctx.stroke();
       hasDrawingRef.current = true;
     },
-    [getPoint],
+    [getPoint, selectedColor],
   );
 
   const handlePointerMove = useCallback(
@@ -102,6 +123,8 @@ export default function StudioPage() {
 
       const point = getPoint(event);
       const lastPoint = lastPointRef.current ?? point;
+      ctx.strokeStyle = selectedColor;
+      ctx.lineWidth = 10;
       ctx.beginPath();
       ctx.moveTo(lastPoint.x, lastPoint.y);
       ctx.lineTo(point.x, point.y);
@@ -109,7 +132,7 @@ export default function StudioPage() {
       lastPointRef.current = point;
       hasDrawingRef.current = true;
     },
-    [getPoint],
+    [getPoint, selectedColor],
   );
 
   const stopDrawing = useCallback((event?: React.PointerEvent<HTMLCanvasElement>) => {
@@ -214,6 +237,27 @@ export default function StudioPage() {
                 {item}
               </button>
             ))}
+          </div>
+
+          <div className={styles.colorPickerBlock}>
+            <div className={styles.colorLabelRow}>
+              <span className={styles.colorLabel}>Drawing color</span>
+              <span className={styles.colorPreview} style={{ backgroundColor: selectedColor }} />
+            </div>
+            <div className={styles.swatchRow}>
+              {COLORS.map((color) => (
+                <button
+                  key={color}
+                  type="button"
+                  className={color === selectedColor ? styles.swatchActive : styles.swatchButton}
+                  onClick={() => setSelectedColor(color)}
+                  aria-label={`Choose color ${color}`}
+                  title={color}
+                >
+                  <span className={styles.swatchInner} style={{ backgroundColor: color }} />
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className={styles.canvasWrap}>
