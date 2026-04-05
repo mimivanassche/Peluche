@@ -42,19 +42,26 @@ export async function openaiRequest(path: string, body: unknown) {
   return data;
 }
 
-export function extractResponseText(data: any): string {
-  if (typeof data?.output_text === 'string' && data.output_text.trim()) {
-    return data.output_text.trim();
+export function extractResponseText(data: unknown): string {
+  const response = typeof data === 'object' && data ? (data as Record<string, unknown>) : {};
+
+  if (typeof response.output_text === 'string' && response.output_text.trim()) {
+    return response.output_text.trim();
   }
 
-  if (Array.isArray(data?.output)) {
+  if (Array.isArray(response.output)) {
     const parts: string[] = [];
 
-    for (const item of data.output) {
-      if (!Array.isArray(item?.content)) continue;
-      for (const contentItem of item.content) {
-        if (typeof contentItem?.text === 'string') {
-          parts.push(contentItem.text);
+    for (const item of response.output) {
+      if (!item || typeof item !== 'object') continue;
+      const outputItem = item as Record<string, unknown>;
+      if (!Array.isArray(outputItem.content)) continue;
+
+      for (const contentItem of outputItem.content) {
+        if (!contentItem || typeof contentItem !== 'object') continue;
+        const text = (contentItem as Record<string, unknown>).text;
+        if (typeof text === 'string') {
+          parts.push(text);
         }
       }
     }

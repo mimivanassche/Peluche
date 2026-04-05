@@ -1,0 +1,96 @@
+.shell {
+  max-width: 860px;
+  margin: 0 auto;
+  padding: 28px 16px 60px;
+}
+
+.card {
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid rgba(72, 82, 120, 0.16);
+  box-shadow: 0 20px 60px rgba(71, 79, 140, 0.14);
+  border-radius: 28px;
+  padding: 24px;
+  display: grid;
+  gap: 18px;
+}
+
+.kicker {
+  margin: 0;
+  color: #4f46e5;
+  font-weight: 700;
+}
+
+.title {
+  margin: 0;
+  font-size: clamp(1.8rem, 4vw, 2.7rem);
+}
+
+.copy {
+  margin: 0;
+  color: #5f6786;
+}
+
+.pageCard {
+  border: 1px solid rgba(87, 99, 160, 0.18);
+  border-radius: 22px;
+  background: rgba(248, 249, 255, 0.88);
+  padding: 16px;
+  display: grid;
+  gap: 12px;
+}
+
+.pageMeta {
+  display: inline-flex;
+  width: fit-content;
+  background: rgba(107, 108, 255, 0.12);
+  color: #4f46e5;
+  padding: 8px 12px;
+  border-radius: 999px;
+  font-weight: 700;
+}
+
+.pageTitle {
+  margin: 0;
+}
+
+.pageImage {
+  width: 100%;
+  height: auto;
+  border-radius: 18px;
+  border: 1px solid rgba(87, 99, 160, 0.18);
+  background: #fff;
+}
+
+.pageText {
+  margin: 0;
+  color: #4a547a;
+  font-size: 1.04rem;
+  line-height: 1.6;
+}
+
+.controls {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.navButton,
+.linkButton {
+  border-radius: 14px;
+  border: 1px solid rgba(87, 99, 160, 0.18);
+  background: rgba(255, 255, 255, 0.95);
+  padding: 12px 14px;
+  font-weight: 700;
+  text-decoration: none;
+  color: #17203a;
+  display: inline-flex;
+  justify-content: center;
+}
+
+.navButton:disabled {
+  opacity: 0.45;
+}
+
+.linkButton {
+  width: fit-content;
+}
