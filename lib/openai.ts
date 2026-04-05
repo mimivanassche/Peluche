@@ -65,12 +65,35 @@ export function extractResponseText(data: any): string {
   return '';
 }
 
-export function parseJsonFromModelText<T>(text: string): T {
-  const cleaned = text
+function stripCodeFences(text: string) {
+  return text
     .replace(/^```json\s*/i, '')
     .replace(/^```\s*/i, '')
     .replace(/```$/i, '')
     .trim();
+}
+
+function tryParseCandidate<T>(candidate: string): T | null {
+  try {
+    const parsed = JSON.parse(candidate);
+
+    if (typeof parsed === 'string') {
+      return tryParseCandidate<T>(parsed);
+    }
+
+    return parsed as T;
+  } catch {
+    return null;
+  }
+}
+
+export function parseJsonFromModelText<T>(text: string): T {
+  const cleaned = stripCodeFences(text);
+
+  const direct = tryParseCandidate<T>(cleaned);
+  if (direct) {
+    return direct;
+  }
 
   const firstBrace = cleaned.indexOf('{');
   const lastBrace = cleaned.lastIndexOf('}');
@@ -79,5 +102,23 @@ export function parseJsonFromModelText<T>(text: string): T {
     throw new Error('The model did not return valid JSON.');
   }
 
-  return JSON.parse(cleaned.slice(firstBrace, lastBrace + 1)) as T;
+  const objectSlice = cleaned.slice(firstBrace, lastBrace + 1);
+
+  const sliced = tryParseCandidate<T>(objectSlice);
+  if (sliced) {
+    return sliced;
+  }
+
+  const unescaped = objectSlice
+    .replace(/\\n/g, '\n')
+    .replace(/\\r/g, '\r')
+    .replace(/\\t/g, '\t')
+    .replace(/\\\"/g, '"');
+
+  const repaired = tryParseCandidate<T>(unescaped);
+  if (repaired) {
+    return repaired;
+  }
+
+  throw new Error('The model returned JSON in an unexpected format. Please try again.');
 }
