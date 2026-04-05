@@ -1,6 +1,7 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import styles from './studio.module.css';
 
 type PelucheData = {
@@ -15,6 +16,7 @@ type StoryPage = {
   pageNumber: number;
   title: string;
   text: string;
+  imageDataUrl: string;
 };
 
 type StoryData = {
@@ -46,6 +48,7 @@ const CANVAS_WIDTH = 900;
 const CANVAS_HEIGHT = 620;
 
 export default function StudioPage() {
+  const router = useRouter();
   const canvasRef = useRef<HTMLCanvasElement | null>(null);
   const drawingRef = useRef(false);
   const hasDrawingRef = useRef(false);
@@ -55,7 +58,6 @@ export default function StudioPage() {
   const [theme, setTheme] = useState<(typeof THEMES)[number]>('Safari');
   const [selectedColor, setSelectedColor] = useState<(typeof COLORS)[number]>('#2563eb');
   const [peluche, setPeluche] = useState<PelucheData | null>(null);
-  const [story, setStory] = useState<StoryData | null>(null);
   const [error, setError] = useState<string>('');
   const [isGeneratingPeluche, setIsGeneratingPeluche] = useState(false);
   const [isGeneratingStory, setIsGeneratingStory] = useState(false);
@@ -146,7 +148,6 @@ export default function StudioPage() {
 
   async function handleCreatePeluche() {
     setError('');
-    setStory(null);
 
     if (!hasDrawingRef.current || !canvasRef.current) {
       setError('Please draw a peluche first.');
@@ -169,8 +170,8 @@ export default function StudioPage() {
       }
 
       setPeluche(payload);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Something went wrong.');
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Something went wrong.');
     } finally {
       setIsGeneratingPeluche(false);
     }
@@ -193,14 +194,19 @@ export default function StudioPage() {
         }),
       });
 
-      const payload = await response.json();
+      const payload = (await response.json()) as StoryData | { error?: string };
       if (!response.ok) {
-        throw new Error(payload.error || 'Failed to create the story.');
+        throw new Error((payload as { error?: string }).error || 'Failed to create the story.');
       }
 
-      setStory(payload);
-    } catch (error) {
-      setError(error instanceof Error ? error.message : 'Something went wrong.');
+      const readerPayload = {
+        peluche,
+        story: payload as StoryData,
+      };
+      sessionStorage.setItem('peluche-reader-story', JSON.stringify(readerPayload));
+      router.push('/reader');
+    } catch (requestError) {
+      setError(requestError instanceof Error ? requestError.message : 'Something went wrong.');
     } finally {
       setIsGeneratingStory(false);
     }
@@ -213,7 +219,7 @@ export default function StudioPage() {
         <h1 className={styles.heroTitle}>Draw your peluche and turn it into a story hero.</h1>
         <p className={styles.heroCopy}>
           This is the working studio: draw one peluche, give it a name, generate the character,
-          and build a 7-page themed story.
+          and build a 4-page themed story.
         </p>
       </section>
 
@@ -293,39 +299,19 @@ export default function StudioPage() {
               <div className={styles.textBlock}>
                 <h3 className={styles.resultTitle}>{peluche.name}</h3>
                 <p className={styles.resultText}>{peluche.description}</p>
-                <p className={styles.resultText}><strong>Personality:</strong> {peluche.personality}</p>
-                <p className={styles.resultText}><strong>Catchphrase:</strong> {peluche.catchphrase}</p>
+                <p className={styles.resultText}>
+                  <strong>Personality:</strong> {peluche.personality}
+                </p>
+                <p className={styles.resultText}>
+                  <strong>Catchphrase:</strong> {peluche.catchphrase}
+                </p>
               </div>
               <button type="button" className={styles.primaryButton} onClick={handleCreateStory} disabled={isGeneratingStory}>
-                {isGeneratingStory ? 'Creating story…' : 'Create 7-page story'}
+                {isGeneratingStory ? 'Creating story and page images…' : 'Create 4-page story'}
               </button>
             </div>
           )}
         </div>
-      </section>
-
-      <section className={styles.card}>
-        <h2 className={styles.sectionTitle}>3. Story pages</h2>
-
-        {!story ? (
-          <div className={styles.emptyState}>Generate your peluche first, then create the story.</div>
-        ) : (
-          <div className={styles.storyBlock}>
-            <div className={styles.storyHeader}>
-              <h3 className={styles.storyTitle}>{story.title}</h3>
-              <p className={styles.storyIntro}>{story.intro}</p>
-            </div>
-            <div className={styles.storyGrid}>
-              {story.pages.map((page) => (
-                <article key={page.pageNumber} className={styles.storyCard}>
-                  <span className={styles.pageBadge}>Page {page.pageNumber}</span>
-                  <h4 className={styles.storyCardTitle}>{page.title}</h4>
-                  <p className={styles.storyCardText}>{page.text}</p>
-                </article>
-              ))}
-            </div>
-          </div>
-        )}
       </section>
 
       {error ? <div className={styles.errorBanner}>{error}</div> : null}

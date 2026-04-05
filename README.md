@@ -5,7 +5,7 @@ Peluche is a responsive Next.js app for iPad and desktop where a child can:
 1. draw and name a plush character,
 2. turn the drawing into a virtual animated peluche,
 3. choose a theme like safari or space,
-4. generate a 7-page story with the peluche as the main character,
+4. generate a 4-page story with the peluche as the main character,
 5. optionally illustrate each story page.
 
 ## Stack
@@ -20,8 +20,8 @@ Peluche is a responsive Next.js app for iPad and desktop where a child can:
 - Draw or import a plush sketch
 - Friendly peluche interpretation from the drawing
 - Character portrait generation with a gentle animation effect
-- 7-page child-friendly story generation
-- Per-page story illustration on demand
+- 4-page child-friendly story generation
+- Automatic illustration for each story page with a dedicated reader view
 - Works well on iPad and desktop browsers
 
 ## Local development
